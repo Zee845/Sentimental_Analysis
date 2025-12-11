@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  # Service 1: The Vector Database
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: sentiment_db
+    ports:
+      - "8001:8000"  # We expose it on 8001 so it doesn't clash with backend
+    networks:
+      - ai_network
+
+  # Service 2: The API & AI Model
+  backend:
+    build: ./backend
+    container_name: sentiment_backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      - chromadb
+    networks:
+      - ai_network
+
+  # Service 3: The User Interface
+  frontend:
+    build: ./frontend
+    container_name: sentiment_frontend
+    ports:
+      - "7860:7860"
+    depends_on:
+      - backend
+    networks:
+      - ai_network
+
+networks:
+  ai_network:
+    driver: bridge
